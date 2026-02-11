@@ -7,7 +7,7 @@ services:
       MYSQL_RANDOM_ROOT_PASSWORD: "yes"
       MYSQL_DATABASE: "db"
       MYSQL_USER: "bunkerweb"
-      MYSQL_PASSWORD: "changeme"
+      MYSQL_PASSWORD: "changeme11"
     volumes:
       - /data/bunkerweb/db:/var/lib/mysql
 
@@ -15,7 +15,7 @@ services:
     image: bunkerity/bunkerweb-ui:1.6.7
     environment:
       ADMIN_USERNAME: "admin"
-      ADMIN_PASSWORD: "SuperSecurise123!"
+      ADMIN_PASSWORD: "SuperSecurise123!!!!"
       DATABASE_URI: "mariadb+pymysql://bunkerweb:changeme@db:3306/db"
 
   scheduler:
@@ -29,8 +29,12 @@ services:
       SERVER_NAME: "83.228.202.27"
       MULTISITE: "yes"
       USE_UI: "yes"
+      USE_REAL_IP: "yes"
+      REAL_IP_FROM: "0.0.0.0/0"
       REVERSE_PROXY_URL: "/admin"
       REVERSE_PROXY_HOST: "http://ui:7000"
+      SERVE_FILES: "no"
+      API_WHITELIST_IP: "0.0.0.0/0"
 
   wb:
     image: bunkerity/bunkerweb:1.6.7
@@ -39,3 +43,6 @@ services:
       - "443:8443"
     volumes:
       - /data/bunkerweb:/data
+    environment:
+      SERVER_NAME: "83.228.202.27"
+      MULTISITE: "yes"
