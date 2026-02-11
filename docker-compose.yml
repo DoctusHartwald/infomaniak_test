@@ -49,4 +49,3 @@ services:
       USE_UI: "yes"
       REVERSE_PROXY_URL: "/admin"
       REVERSE_PROXY_HOST: "http://ui:7000"
-``
