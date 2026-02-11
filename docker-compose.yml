@@ -7,7 +7,7 @@ services:
       MYSQL_RANDOM_ROOT_PASSWORD: "yes"
       MYSQL_DATABASE: "db"
       MYSQL_USER: "bunkerweb"
-      MYSQL_PASSWORD: "changeme11"
+      MYSQL_PASSWORD: "changeme1111"
     volumes:
       - /data/bunkerweb/db:/var/lib/mysql
 
@@ -16,7 +16,7 @@ services:
     environment:
       ADMIN_USERNAME: "admin"
       ADMIN_PASSWORD: "SuperSecurise123!!!!"
-      DATABASE_URI: "mariadb+pymysql://bunkerweb:changeme@db:3306/db"
+      DATABASE_URI: "mariadb+pymysql://bunkerweb:changeme11@db:3306/db"
 
   scheduler:
     image: bunkerity/bunkerweb-scheduler:1.6.7
@@ -26,7 +26,7 @@ services:
       - wb
     environment:
       BUNKERWEB_INSTANCES: "wb"
-      SERVER_NAME: "83.228.202.27"
+      SERVER_NAME: "83.228.234.47"            # <<< Mets la même FIP que celle du service 'wb'
       MULTISITE: "yes"
       USE_UI: "yes"
       USE_REAL_IP: "yes"
@@ -36,8 +36,7 @@ services:
       SERVE_FILES: "no"
       API_WHITELIST_IP: "0.0.0.0/0"
 
- 
-wb:
+  wb:
     image: bunkerity/bunkerweb:1.6.7
     ports:
       - "80:8080"
@@ -45,11 +44,9 @@ wb:
     volumes:
       - /data/bunkerweb:/data
     environment:
-      SERVER_NAME: "83.228.234.47"
+      SERVER_NAME: "83.228.234.47"            # <<< Identique au scheduler
       MULTISITE: "yes"
       USE_UI: "yes"
       REVERSE_PROXY_URL: "/admin"
       REVERSE_PROXY_HOST: "http://ui:7000"
-
-      SERVER_NAME: "83.228.202.27"
-      MULTISITE: "yes"
+``
