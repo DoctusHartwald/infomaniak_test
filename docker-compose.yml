@@ -36,7 +36,8 @@ services:
       SERVE_FILES: "no"
       API_WHITELIST_IP: "0.0.0.0/0"
 
-  wb:
+ 
+wb:
     image: bunkerity/bunkerweb:1.6.7
     ports:
       - "80:8080"
@@ -44,5 +45,11 @@ services:
     volumes:
       - /data/bunkerweb:/data
     environment:
+      SERVER_NAME: "83.228.234.47"
+      MULTISITE: "yes"
+      USE_UI: "yes"
+      REVERSE_PROXY_URL: "/admin"
+      REVERSE_PROXY_HOST: "http://ui:7000"
+
       SERVER_NAME: "83.228.202.27"
       MULTISITE: "yes"
