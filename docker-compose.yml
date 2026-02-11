@@ -14,9 +14,9 @@ services:
   ui:
     image: bunkerity/bunkerweb-ui:1.6.7
     environment:
-      ADMIN_USERNAME=admin
-      ADMIN_PASSWORD=SuperSecurise123!
-      DATABASE_URI=mariadb+pymysql://bunkerweb:changeme@db:3306/db
+      ADMIN_USERNAME: "admin"
+      ADMIN_PASSWORD: "SuperSecurise123!"
+      DATABASE_URI: "mariadb+pymysql://bunkerweb:changeme@db:3306/db"
 
   scheduler:
     image: bunkerity/bunkerweb-scheduler:1.6.7
@@ -25,12 +25,12 @@ services:
       - db
       - wb
     environment:
-      BUNKERWEB_INSTANCES=wb
-      SERVER_NAME=127.0.0.1
-      MULTISITE=yes
-      USE_UI=yes
-      REVERSE_PROXY_URL=/admin
-      REVERSE_PROXY_HOST=http://ui:7000
+      BUNKERWEB_INSTANCES: "wb"
+      SERVER_NAME: "83.228.202.27"
+      MULTISITE: "yes"
+      USE_UI: "yes"
+      REVERSE_PROXY_URL: "/admin"
+      REVERSE_PROXY_HOST: "http://ui:7000"
 
   wb:
     image: bunkerity/bunkerweb:1.6.7
