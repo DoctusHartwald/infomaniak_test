@@ -1,56 +1,41 @@
-#cloud-config
+version: "3.8"
 
-write_files:
-  - path: /data/bunkerweb/docker-compose.yml
-    permissions: "0644"
-    owner: root:root
-    content: |
-      version: "3"
-      services:
-        db:
-          image: mariadb:11
-          environment:
-            MYSQL_RANDOM_ROOT_PASSWORD: "yes"
-            MYSQL_DATABASE: "db"
-            MYSQL_USER: "bunkerweb"
-            MYSQL_PASSWORD: "changeme"
-          volumes:
-            - /data/bunkerweb/db:/var/lib/mysql
+services:
+  db:
+    image: mariadb:11
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_DATABASE: "db"
+      MYSQL_USER: "bunkerweb"
+      MYSQL_PASSWORD: "changeme"
+    volumes:
+      - /data/bunkerweb/db:/var/lib/mysql
 
-        ui:
-          image: bunkerity/bunkerweb-ui:1.6.7
-          environment:
-            ADMIN_USERNAME=admin
-            ADMIN_PASSWORD=SuperSecurise123!
-            DATABASE_URI=mariadb+pymysql://bunkerweb:changeme@db:3306/db
+  ui:
+    image: bunkerity/bunkerweb-ui:1.6.7
+    environment:
+      ADMIN_USERNAME=admin
+      ADMIN_PASSWORD=SuperSecurise123!
+      DATABASE_URI=mariadb+pymysql://bunkerweb:changeme@db:3306/db
 
-        scheduler:
-          image: bunkerity/bunkerweb-scheduler:1.6.7
-          depends_on:
-            - ui
-            - db
-            - wb
-          environment:
-            BUNKERWEB_INSTANCES=wb
-            SERVER_NAME=${public_fip}
-            MULTISITE=yes
-            USE_UI=yes
-            REVERSE_PROXY_URL=/admin
-            REVERSE_PROXY_HOST=http://ui:7000
+  scheduler:
+    image: bunkerity/bunkerweb-scheduler:1.6.7
+    depends_on:
+      - ui
+      - db
+      - wb
+    environment:
+      BUNKERWEB_INSTANCES=wb
+      SERVER_NAME=127.0.0.1
+      MULTISITE=yes
+      USE_UI=yes
+      REVERSE_PROXY_URL=/admin
+      REVERSE_PROXY_HOST=http://ui:7000
 
-        wb:
-          image: bunkerity/bunkerweb:1.6.7
-          ports:
-            - "80:8080"
-            - "443:8443"
-          volumes:
-            - /data/bunkerweb:/data
-
-      networks:
-        default:
-          driver: bridge
-
-runcmd:
-  - apt update && apt install -y docker.io docker-compose
-  - mkdir -p /data/bunkerweb && chown 101:101 /data/bunkerweb
-  - docker-compose -f /data/bunkerweb/docker-compose.yml up -d
+  wb:
+    image: bunkerity/bunkerweb:1.6.7
+    ports:
+      - "80:8080"
+      - "443:8443"
+    volumes:
+      - /data/bunkerweb:/data
