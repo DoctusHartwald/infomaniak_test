@@ -7,9 +7,10 @@ services:
       MYSQL_RANDOM_ROOT_PASSWORD: "yes"
       MYSQL_DATABASE: "db"
       MYSQL_USER: "bunkerweb"
-      MYSQL_PASSWORD: "changeme1111"
+      MYSQL_PASSWORD: "changeme11"
     volumes:
       - /data/bunkerweb/db:/var/lib/mysql
+    networks: [bw]
 
   ui:
     image: bunkerity/bunkerweb-ui:1.6.7
@@ -17,16 +18,14 @@ services:
       ADMIN_USERNAME: "admin"
       ADMIN_PASSWORD: "SuperSecurise123!!!!"
       DATABASE_URI: "mariadb+pymysql://bunkerweb:changeme11@db:3306/db"
+    networks: [bw]
 
   scheduler:
     image: bunkerity/bunkerweb-scheduler:1.6.7
-    depends_on:
-      - ui
-      - db
-      - wb
+    depends_on: [ui, db, wb]
     environment:
       BUNKERWEB_INSTANCES: "wb"
-      SERVER_NAME: "83.228.234.47"            # <<< Mets la même FIP que celle du service 'wb'
+      SERVER_NAME: "83.228.234.47"       # même FIP que 'wb'
       MULTISITE: "yes"
       USE_UI: "yes"
       USE_REAL_IP: "yes"
@@ -34,7 +33,7 @@ services:
       REVERSE_PROXY_URL: "/admin"
       REVERSE_PROXY_HOST: "http://ui:7000"
       SERVE_FILES: "no"
-      API_WHITELIST_IP: "0.0.0.0/0"
+    networks: [bw]
 
   wb:
     image: bunkerity/bunkerweb:1.6.7
@@ -44,8 +43,17 @@ services:
     volumes:
       - /data/bunkerweb:/data
     environment:
-      SERVER_NAME: "83.228.234.47"            # <<< Identique au scheduler
+      SERVER_NAME: "83.228.234.47"       # identique au scheduler
       MULTISITE: "yes"
       USE_UI: "yes"
       REVERSE_PROXY_URL: "/admin"
       REVERSE_PROXY_HOST: "http://ui:7000"
+      API_WHITELIST_IP: "127.0.0.0/8 10.42.0.0/24"   # <-- whitelist stable creation bridge
+    networks: [bw]
+
+networks:
+  bw:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.42.0.0/24
