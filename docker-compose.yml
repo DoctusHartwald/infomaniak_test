@@ -19,8 +19,9 @@ services:
       - "443:8443"
     environment:
       SERVER_NAME: "83.228.234.47"
-      USE_UI: "yes"                       # UI activée côté BunkerWeb
-      API_WHITELIST_IP: "127.0.0.0/8 172.18.0.0/16"  # Autorise UI + Scheduler depuis le réseau Docker
+      USE_UI: "yes"
+      DEFAULT_APP: "yes"                    # ✔️ DOIT ÊTRE ICI
+      API_WHITELIST_IP: "127.0.0.0/8 172.18.0.0/16"
       LOG_LEVEL: "info"
       TZ: "Europe/Zurich"
     networks:
@@ -35,8 +36,8 @@ services:
     environment:
       DOCKER_HOST: "unix:///var/run/docker.sock"
       USE_DOCKER_SOCKET: "yes"
-      BUNKERWEB_API_HOST: "bunkerweb"     # Hostname Docker du service API
-      BUNKERWEB_INSTANCES: "bunkerweb"    # Nom du service à piloter
+      BUNKERWEB_API_HOST: "bunkerweb"
+      BUNKERWEB_INSTANCES: "bunkerweb"
       TZ: "Europe/Zurich"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -52,11 +53,20 @@ services:
       - bw-scheduler
     environment:
       ADMIN_USERNAME: "admin"
-      ADMIN_PASSWORD: "SuperSecurise123!"   # À changer immédiatement
-      ABSOLUTE_URI: "http://83.228.234.47/admin/"  # Mets http(s)://FQDN/admin en prod
+      ADMIN_PASSWORD: "SuperSecurise123!"
+      ABSOLUTE_URI: "http://83.228.234.47:7000/"   # ✔️ CORRECT
       BUNKERWEB_API_HOST: "bunkerweb"
       TZ: "Europe/Zurich"
     ports:
-      - "7000:7000"     # À limiter par firewall / SG en prod
+      - "7000:7000"
     networks:
       - bw-net
+
+  test-backend:
+    image: hashicorp/http-echo
+    command: ["-text=Hello depuis BunkerWeb !"]
+    networks:
+      - bw-net
+    labels:
+      - "bunkerweb.INSTANCE=yes"
+      - "bunkerweb.SERVER_NAME=83.228.234.47"
