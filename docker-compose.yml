@@ -21,9 +21,9 @@ services:
     environment:
       SERVER_NAME: "83.228.234.47"
       USE_UI: "yes"
-      DEFAULT_APP: "no"
+      DEFAULT_APP: "yes"
       API_WHITELIST_IP: "127.0.0.0/8 172.18.0.0/16"
-      LOG_LEVEL: "debug"
+      LOG_LEVEL: "info"
       TZ: "Europe/Zurich"
     networks:
       - bw-net
@@ -54,7 +54,7 @@ services:
       - bw-scheduler
     environment:
       ADMIN_USERNAME: "admin"
-      ADMIN_PASSWORD: "SuperSecurise123!"
+      ADMIN_PASSWORD: "SuperSecurise123!!!!!"
       ABSOLUTE_URI: "http://83.228.234.47:7000/"
       BUNKERWEB_API_HOST: "bunkerweb"
       TZ: "Europe/Zurich"
@@ -71,4 +71,3 @@ services:
     labels:
       - "bunkerweb.INSTANCE=yes"
       - "bunkerweb.SERVER_NAME=83.228.234.47"
-
