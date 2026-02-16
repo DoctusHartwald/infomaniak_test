@@ -13,6 +13,8 @@ services:
     image: bunkerity/bunkerweb:1.6.7
     container_name: bunkerweb
     restart: unless-stopped
+    volumes:
+      - /data/bunkerweb/bw-data:/data
     labels:
       - "bunkerweb.INSTANCE=yes"
     ports:
