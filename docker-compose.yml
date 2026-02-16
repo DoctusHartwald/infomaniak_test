@@ -8,6 +8,7 @@ networks:
         - subnet: 172.18.0.0/16
 
 services:
+
   bunkerweb:
     image: bunkerity/bunkerweb:1.6.7
     container_name: bunkerweb
@@ -20,9 +21,9 @@ services:
     environment:
       SERVER_NAME: "83.228.234.47"
       USE_UI: "yes"
-      DEFAULT_APP: "yes"                    # ✔️ DOIT ÊTRE ICI
+      DEFAULT_APP: "no"
       API_WHITELIST_IP: "127.0.0.0/8 172.18.0.0/16"
-      LOG_LEVEL: "info"
+      LOG_LEVEL: "debug"
       TZ: "Europe/Zurich"
     networks:
       - bw-net
@@ -54,7 +55,7 @@ services:
     environment:
       ADMIN_USERNAME: "admin"
       ADMIN_PASSWORD: "SuperSecurise123!"
-      ABSOLUTE_URI: "http://83.228.234.47:7000/"   # ✔️ CORRECT
+      ABSOLUTE_URI: "http://83.228.234.47:7000/"
       BUNKERWEB_API_HOST: "bunkerweb"
       TZ: "Europe/Zurich"
     ports:
@@ -70,3 +71,4 @@ services:
     labels:
       - "bunkerweb.INSTANCE=yes"
       - "bunkerweb.SERVER_NAME=83.228.234.47"
+``
