@@ -71,4 +71,4 @@ services:
     labels:
       - "bunkerweb.INSTANCE=yes"
       - "bunkerweb.SERVER_NAME=83.228.234.47"
-``
+
