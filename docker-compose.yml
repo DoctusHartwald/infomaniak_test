@@ -1,36 +1,22 @@
-networks:
-  bw-net:
-    driver: bridge
+version: "3.8"
 
 services:
-
   bunkerweb:
     image: bunkerity/bunkerweb:1.6.8
     container_name: bunkerweb
     restart: unless-stopped
-    labels:
-      - "bunkerweb.INSTANCE=yes"
     ports:
-      - "80:8080"
-      - "443:8443"
+      - "80:80"
+      - "443:443"
+      - "5000:5000"
     environment:
-      SERVER_NAME: "83.228.234.47"
-      DEFAULT_APP: "yes"
+      SERVER_NAME: "localhost"
       USE_UI: "yes"
-
-      API_WHITELIST_IP: "127.0.0.1/8 172.18.0.0/16 46.140.15.106/32"
-
-      # BACKEND
-      UPSTREAM_HOST: "test-backend"
-      UPSTREAM_PORT: "5678"
-
-      LOG_LEVEL: "info"
-      TZ: "Europe/Zurich"
-
+      USE_SCHEDULER: "yes"
+    volumes:
+      - /data/bw-data:/var/lib/bunkerweb
     networks:
       - bw-net
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
 
   bw-ui:
     image: bunkerity/bunkerweb-ui:1.6.8
@@ -39,12 +25,14 @@ services:
     depends_on:
       - bunkerweb
     environment:
-      BUNKERWEB_API_HOST: "bunkerweb"
+      BUNKERWEB_URL: "http://bunkerweb:5000"
       ADMIN_USERNAME: "admin"
       ADMIN_PASSWORD: "SuperSecurise123!"
-      ABSOLUTE_URI: "http://83.228.234.47:7001/"
+      ABSOLUTE_URI: "http://83.228.234.47:7001"
     ports:
       - "7001:7000"
+    volumes:
+      - /data/bw-ui:/var/lib/bunkerweb
     networks:
       - bw-net
 
@@ -55,18 +43,14 @@ services:
     depends_on:
       - bunkerweb
     environment:
+      BUNKERWEB_URL: "http://bunkerweb:5000"
       DOCKER_HOST: "unix:///var/run/docker.sock"
-      USE_DOCKER_SOCKET: "yes"
-      BUNKERWEB_API_HOST: "bunkerweb"
-      BUNKERWEB_API_WHITELIST_IP: "127.0.0.1/8 172.18.0.0/16"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /data/bw-scheduler:/var/lib/bunkerweb
     networks:
       - bw-net
 
-  test-backend:
-    image: hashicorp/http-echo
-    container_name: test-backend
-    command: ["-text=Hello from test backend"]
-    networks:
-      - bw-net
+networks:
+  bw-net:
+    driver: bridge
