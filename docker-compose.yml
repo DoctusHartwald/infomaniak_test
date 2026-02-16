@@ -1,59 +1,62 @@
 version: "3.8"
 
-services:
-  db:
-    image: mariadb:11
-    environment:
-      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
-      MYSQL_DATABASE: "db"
-      MYSQL_USER: "bunkerweb"
-      MYSQL_PASSWORD: "changeme11"
-    volumes:
-      - /data/bunkerweb/db:/var/lib/mysql
-    networks: [bw]
-
-  ui:
-    image: bunkerity/bunkerweb-ui:1.6.7
-    environment:
-      ADMIN_USERNAME: "admin"
-      ADMIN_PASSWORD: "SuperSecurise123!!!!"
-      DATABASE_URI: "mariadb+pymysql://bunkerweb:changeme11@db:3306/db"
-    networks: [bw]
-
-  scheduler:
-    image: bunkerity/bunkerweb-scheduler:1.6.7
-    depends_on: [ui, db, wb]
-    environment:
-      BUNKERWEB_INSTANCES: "wb"
-      SERVER_NAME: "83.228.234.47"       # même FIP que 'wb'
-      MULTISITE: "yes"
-      USE_UI: "yes"
-      USE_REAL_IP: "yes"
-      REAL_IP_FROM: "0.0.0.0/0"
-      REVERSE_PROXY_URL: "/admin"
-      REVERSE_PROXY_HOST: "http://ui:7000"
-      SERVE_FILES: "no"
-    networks: [bw]
-
-  wb:
-    image: bunkerity/bunkerweb:1.6.7
-    ports:
-      - "80:8080"
-      - "443:8443"
-    volumes:
-      - /data/bunkerweb:/data
-    environment:
-      SERVER_NAME: "83.228.234.47"       # identique au scheduler
-      MULTISITE: "yes"
-      USE_UI: "yes"
-      REVERSE_PROXY_URL: "/admin"
-      REVERSE_PROXY_HOST: "http://ui:7000"
-      API_WHITELIST_IP: "127.0.0.0/8 10.42.0.0/24"   # <-- whitelist stable creation bridge
-    networks: [bw]
-
 networks:
-  bw:
+  bw-net:
     driver: bridge
     ipam:
       config:
-        - subnet: 10.42.0.0/24
+        - subnet: 172.18.0.0/16
+
+services:
+  bunkerweb:
+    image: bunkerity/bunkerweb:1.6.7
+    container_name: bunkerweb
+    restart: unless-stopped
+    labels:
+      - "bunkerweb.INSTANCE=yes"
+    ports:
+      - "80:8080"
+      - "443:8443"
+    environment:
+      SERVER_NAME: "83.228.234.47"
+      USE_UI: "yes"                       # UI activée côté BunkerWeb
+      API_WHITELIST_IP: "127.0.0.0/8 172.18.0.0/16"  # Autorise UI + Scheduler depuis le réseau Docker
+      LOG_LEVEL: "info"
+      TZ: "Europe/Zurich"
+    networks:
+      - bw-net
+
+  bw-scheduler:
+    image: bunkerity/bunkerweb-scheduler:1.6.7
+    container_name: bw-scheduler
+    restart: unless-stopped
+    depends_on:
+      - bunkerweb
+    environment:
+      DOCKER_HOST: "unix:///var/run/docker.sock"
+      USE_DOCKER_SOCKET: "yes"
+      BUNKERWEB_API_HOST: "bunkerweb"     # Hostname Docker du service API
+      BUNKERWEB_INSTANCES: "bunkerweb"    # Nom du service à piloter
+      TZ: "Europe/Zurich"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - bw-net
+
+  bw-ui:
+    image: bunkerity/bunkerweb-ui:1.6.7
+    container_name: bw-ui
+    restart: unless-stopped
+    depends_on:
+      - bunkerweb
+      - bw-scheduler
+    environment:
+      ADMIN_USERNAME: "admin"
+      ADMIN_PASSWORD: "SuperSecurise123!"   # À changer immédiatement
+      ABSOLUTE_URI: "http://83.228.234.47/admin/"  # Mets http(s)://FQDN/admin en prod
+      BUNKERWEB_API_HOST: "bunkerweb"
+      TZ: "Europe/Zurich"
+    ports:
+      - "7000:7000"     # À limiter par firewall / SG en prod
+    networks:
+      - bw-net
