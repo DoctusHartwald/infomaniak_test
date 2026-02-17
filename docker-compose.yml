@@ -6,6 +6,59 @@ services:
     restart: unless-stopped
     # BunkerWeb écoute en INTERNE sur 8080/8443 -> on mappe 80/443 côté hôte
     ports:
+services:
+  bunkerweb:
+    image: bunkerity/bunkerweb:1.6.8
+    container_name: bunkerweb
+    restart: unless-stopped
+    ports:
+      - "80:8080"
+      - "443:8443"
+      - "443:8443/udp"
+    environment:
+      SERVER_NAME: "83.228.234.47"
+      USE_UI: "yes"
+      USE_SCHEDULER: "yes"
+    volumes:
+      - bw-data:/var/lib/bunkerweb
+    networks:
+      - bw-net
+
+  bw-ui:
+    image: bunkerity/bunkerweb-ui:1.6.8
+    container_name: bw-ui
+    restart: unless-stopped
+    environment:
+      BUNKERWEB_URL: "http://bunkerweb:5000"
+      ADMIN_USERNAME: "admin"
+      ADMIN_PASSWORD: "SuperSecurise123!"
+      ABSOLUTE_URI: "http://83.228.234.47:7001"
+    ports:
+      - "7001:7000"
+    volumes:
+      - bw-data:/var/lib/bunkerweb
+    networks:
+      - bw-net
+
+  bw-scheduler:
+    image: bunkerity/bunkerweb-scheduler:1.6.8
+    container_name: bw-scheduler
+    restart: unless-stopped
+    environment:
+      BUNKERWEB_URL: "http://bunkerweb:5000"
+      DOCKER_HOST: "unix:///var/run/docker.sock"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - bw-data:/var/lib/bunkerweb
+    networks:
+      - bw-net
+
+networks:
+  bw-net:
+
+volumes:
+  bw-data:
+
       - "80:8080"
       - "443:8443"
       - "443:8443/udp"   # QUIC/HTTP3
