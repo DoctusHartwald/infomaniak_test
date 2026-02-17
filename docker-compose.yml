@@ -30,6 +30,12 @@ services:
       ABSOLUTE_URI: "http://83.228.234.47:7001"
       DISABLE_BUNKERNET: "yes"
       ENABLE_HEALTHCHECK: "yes"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:7000/ >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
     ports:
       - "7001:7000"
     volumes:
