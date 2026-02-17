@@ -21,7 +21,7 @@ services:
     container_name: bw-ui
     restart: unless-stopped
     environment:
-      BUNKERWEB_URL: "http://bunkerweb:5000"
+      BUNKERWEB_URL: "http://172.19.0.3:5000"
       ADMIN_USERNAME: "admin"
       ADMIN_PASSWORD: "SuperSecurise123!"
       ABSOLUTE_URI: "http://83.228.234.47:7001"
