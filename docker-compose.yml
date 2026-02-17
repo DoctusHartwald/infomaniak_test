@@ -18,19 +18,19 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - bw-net
-
   bw-ui:
     image: bunkerity/bunkerweb-ui:1.6.8
     container_name: bw-ui
     restart: unless-stopped
+    ports:
+      - "7001:7000"
     environment:
       BUNKERWEB_URL: "http://bunkerweb:5000"
-      ADMIN_USERNAME: "admin"
-      ADMIN_PASSWORD: "SuperSecurise123!"
-      ABSOLUTE_URI: "http://83.228.234.47:7001"
-      DISABLE_BUNKERNET: "yes"
-      ENABLE_HEALTHCHECK: "yes"
-     healthcheck:
+    volumes:
+      - /data/bw-ui:/data
+      - /data/bw-ui-run:/var/run/bunkerweb
+      - /data/bw-ui-tmp:/var/tmp/bunkerweb
+    healthcheck:
       test: ["CMD-SHELL", "test -f /var/run/bunkerweb/tmp-ui.pid -a -f /var/tmp/bunkerweb/tmp-ui.healthy"]
       interval: 10s
       timeout: 3s
