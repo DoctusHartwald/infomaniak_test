@@ -1,4 +1,4 @@
-version: "3.8"
+
 
 services:
   bunkerweb:
@@ -8,22 +8,30 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "5000:5000"
     environment:
-      SERVER_NAME: "localhost"
+      # IMPORTANT: mets ton FQDN si tu en as un (sinon l'IP publique)
+      SERVER_NAME: "83.228.234.47"
       USE_UI: "yes"
       USE_SCHEDULER: "yes"
+      # Optionnel: augmente le log si besoin de debug
+      # LOG_LEVEL: "info"
     volumes:
-      - /data/bw-data:/var/lib/bunkerweb
+      - bw-data:/var/lib/bunkerweb
     networks:
       - bw-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:5000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
 
   bw-ui:
     image: bunkerity/bunkerweb-ui:1.6.8
     container_name: bw-ui
     restart: unless-stopped
     depends_on:
-      - bunkerweb
+      bunkerweb:
+        condition: service_healthy
     environment:
       BUNKERWEB_URL: "http://bunkerweb:5000"
       ADMIN_USERNAME: "admin"
@@ -32,25 +40,37 @@ services:
     ports:
       - "7001:7000"
     volumes:
-      - /data/bw-ui:/var/lib/bunkerweb
+      - bw-data:/var/lib/bunkerweb
     networks:
       - bw-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:7000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
 
   bw-scheduler:
     image: bunkerity/bunkerweb-scheduler:1.6.8
     container_name: bw-scheduler
     restart: unless-stopped
     depends_on:
-      - bunkerweb
+      bunkerweb:
+        condition: service_healthy
     environment:
       BUNKERWEB_URL: "http://bunkerweb:5000"
       DOCKER_HOST: "unix:///var/run/docker.sock"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /data/bw-scheduler:/var/lib/bunkerweb
+      # RW nécessaire pour le scheduler
+      - /var/run/docker.sock:/var/run/docker.sock
+      - bw-data:/var/lib/bunkerweb
     networks:
       - bw-net
 
 networks:
   bw-net:
     driver: bridge
+
+volumes:
+  bw-data:
+    driver: local
+
