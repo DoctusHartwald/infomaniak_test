@@ -29,6 +29,7 @@ services:
       ADMIN_PASSWORD: "SuperSecurise123!"
       ABSOLUTE_URI: "http://83.228.234.47:7001"
       DISABLE_BUNKERNET: "yes"
+      ENABLE_HEALTHCHECK: "yes"
     ports:
       - "7001:7000"
     volumes:
