@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   bunkerweb:
     image: bunkerity/bunkerweb:1.6.8
@@ -13,8 +11,10 @@ services:
       SERVER_NAME: "83.228.234.47"
       USE_UI: "yes"
       USE_SCHEDULER: "yes"
+      DISABLE_BUNKERNET: "yes"
     volumes:
-      - bw-data:/var/lib/bunkerweb
+      - /data/bunkerweb:/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - bw-net
 
@@ -27,12 +27,15 @@ services:
       ADMIN_USERNAME: "admin"
       ADMIN_PASSWORD: "SuperSecurise123!"
       ABSOLUTE_URI: "http://83.228.234.47:7001"
+      DISABLE_BUNKERNET: "yes"
     ports:
       - "7001:7000"
     volumes:
-      - bw-data:/var/lib/bunkerweb
+      - /data/bw-ui:/data
     networks:
       - bw-net
+    depends_on:
+      - bunkerweb
 
   bw-scheduler:
     image: bunkerity/bunkerweb-scheduler:1.6.8
@@ -41,14 +44,14 @@ services:
     environment:
       BUNKERWEB_URL: "http://bunkerweb:5000"
       DOCKER_HOST: "unix:///var/run/docker.sock"
+      DISABLE_BUNKERNET: "yes"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - bw-data:/var/lib/bunkerweb
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /data/bw-scheduler:/data
     networks:
       - bw-net
+    depends_on:
+      - bunkerweb
 
 networks:
   bw-net:
-
-volumes:
-  bw-data:
