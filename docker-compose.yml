@@ -18,10 +18,13 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - bw-net
+
   bw-ui:
     image: bunkerity/bunkerweb-ui:1.6.8
     container_name: bw-ui
     restart: unless-stopped
+    depends_on:
+      - bunkerweb
     ports:
       - "7001:7000"
     environment:
@@ -36,19 +39,15 @@ services:
       timeout: 3s
       retries: 6
       start_period: 30s
-    ports:
-      - "7001:7000"
-    volumes:
-      - /data/bw-ui:/data
     networks:
       - bw-net
-    depends_on:
-      - bunkerweb
 
   bw-scheduler:
     image: bunkerity/bunkerweb-scheduler:1.6.8
     container_name: bw-scheduler
     restart: unless-stopped
+    depends_on:
+      - bunkerweb
     environment:
       BUNKERWEB_URL: "http://bunkerweb:5000"
       DOCKER_HOST: "unix:///var/run/docker.sock"
@@ -58,8 +57,7 @@ services:
       - /data/bw-scheduler:/data
     networks:
       - bw-net
-    depends_on:
-      - bunkerweb
 
 networks:
   bw-net:
+    name: bw-net
