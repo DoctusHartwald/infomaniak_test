@@ -1,5 +1,4 @@
 
-
 services:
   bunkerweb:
     image: bunkerity/bunkerweb:1.6.8
@@ -9,18 +8,18 @@ services:
       - "80:80"
       - "443:443"
     environment:
-      # IMPORTANT: mets ton FQDN si tu en as un (sinon l'IP publique)
+      # Utilise ta FIP ou ton FQDN (ici FIP Infomaniak)
       SERVER_NAME: "83.228.234.47"
       USE_UI: "yes"
       USE_SCHEDULER: "yes"
-      # Optionnel: augmente le log si besoin de debug
-      # LOG_LEVEL: "info"
+      # LOG_LEVEL: "info"  # décommente pour augmenter les logs si besoin
     volumes:
       - bw-data:/var/lib/bunkerweb
     networks:
       - bw-net
+    # IMPORTANT : healthcheck corrigé -> ajoute Host: bwapi
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:5000/health || exit 1"]
+      test: ["CMD-SHELL", "curl -fsS -H 'Host: bwapi' http://127.0.0.1:5000/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 12
@@ -44,7 +43,7 @@ services:
     networks:
       - bw-net
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:7000/health || exit 1"]
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:7000/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 12
@@ -60,7 +59,7 @@ services:
       BUNKERWEB_URL: "http://bunkerweb:5000"
       DOCKER_HOST: "unix:///var/run/docker.sock"
     volumes:
-      # RW nécessaire pour le scheduler
+      # RW requis pour piloter Docker
       - /var/run/docker.sock:/var/run/docker.sock
       - bw-data:/var/lib/bunkerweb
     networks:
@@ -73,4 +72,4 @@ networks:
 volumes:
   bw-data:
     driver: local
-
+``
