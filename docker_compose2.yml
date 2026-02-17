@@ -1,0 +1,95 @@
+services:
+  bw-db:
+    image: mariadb:11
+    container_name: bw-db
+    restart: unless-stopped
+    command: --max-allowed-packet=67108864
+    environment:
+      MYSQL_DATABASE: bunkerweb
+      MYSQL_USER: bunkerweb
+      MYSQL_PASSWORD: "SecurePass123!"
+      MYSQL_ROOT_PASSWORD: "RootSecure123!"
+    volumes:
+      - bw-db-data:/var/lib/mysql
+    networks:
+      - bw-net
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h localhost --user=root --password=RootSecure123! || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  bunkerweb:
+    image: bunkerity/bunkerweb:1.6.8
+    container_name: bunkerweb
+    restart: unless-stopped
+    depends_on:
+      bw-db:
+        condition: service_healthy
+    ports:
+      - "80:8080"
+      - "443:8443"
+      - "443:8443/udp"
+    environment:
+      SERVER_NAME: localhost
+      USE_UI: "yes"
+      USE_SCHEDULER: "yes"
+      DISABLE_BUNKERNET: "yes"
+      MULTISITE: "yes"
+      API_EXTERNAL_URL: "http://bunkerweb:5000"
+      API_WHITELIST_IP: "0.0.0.0/0"
+    volumes:
+      - bw-data:/data
+      - docker-sock:/var/run/docker.sock:ro
+    networks:
+      - bw-net
+    labels:
+      bunkerweb.INSTANCE: "yes"
+
+  bw-ui:
+    image: bunkerity/bunkerweb-ui:1.6.8
+    container_name: bw-ui
+    restart: unless-stopped
+    depends_on:
+      - bunkerweb
+    ports:
+      - "7001:7000"
+    environment:
+      BUNKERWEB_URL: "http://bunkerweb:5000"
+      SWARM_MODE: "no"
+    volumes:
+      - bw-ui-data:/data
+      - bw-ui-run:/var/run/bunkerweb
+      - bw-ui-tmp:/var/tmp/bunkerweb
+    networks:
+      - bw-net
+
+  bw-scheduler:
+    image: bunkerity/bunkerweb-scheduler:1.6.8
+    container_name: bw-scheduler
+    restart: unless-stopped
+    depends_on:
+      - bunkerweb
+    environment:
+      BUNKERWEB_URL: "http://bunkerweb:5000"
+      DOCKER_HOST: "unix:///var/run/docker.sock"
+      DISABLE_BUNKERNET: "yes"
+      SWARM_MODE: "no"
+    volumes:
+      - docker-sock:/var/run/docker.sock:ro
+      - bw-scheduler-data:/data
+    networks:
+      - bw-net
+
+volumes:
+  bw-db-data:
+  bw-data:
+  bw-ui-data:
+  bw-ui-run:
+  bw-ui-tmp:
+  bw-scheduler-data:
+  docker-sock:
+
+networks:
+  bw-net:
+    name: bw-net
