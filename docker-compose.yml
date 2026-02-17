@@ -4,17 +4,21 @@ services:
     image: bunkerity/bunkerweb:1.6.8
     container_name: bunkerweb
     restart: unless-stopped
+    # BunkerWeb écoute en INTERNE sur 8080/8443 -> on mappe 80/443 côté hôte
     ports:
-      - "80:80"
-      - "443:443"
+      - "80:8080"
+      - "443:8443"
+      - "443:8443/udp"   # QUIC/HTTP3
     environment:
-      SERVER_NAME: "83.228.234.47"
+      SERVER_NAME: "83.228.234.47"   # remplace par ton FQDN quand tu en as un
       USE_UI: "yes"
       USE_SCHEDULER: "yes"
+      # LOG_LEVEL: "info"            # décommente pour plus de verbosité
     volumes:
       - bw-data:/var/lib/bunkerweb
     networks:
       - bw-net
+    # Healthcheck : utiliser wget (présent dans l'image) + Host: bwapi
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- --header='Host: bwapi' http://127.0.0.1:5000/health >/dev/null 2>&1 || exit 1"]
       interval: 10s
@@ -56,7 +60,7 @@ services:
       BUNKERWEB_URL: "http://bunkerweb:5000"
       DOCKER_HOST: "unix:///var/run/docker.sock"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock   # RW requis
       - bw-data:/var/lib/bunkerweb
     networks:
       - bw-net
